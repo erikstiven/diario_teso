@@ -27,11 +27,11 @@ $sqlFiltroEstado = '';
 $sqlEstadoEmpresa = "select emmpr_uafe_cprov from saeempr where empr_cod_empr = $idempresa";
 $uafeEstado = consulta_string_func($sqlEstadoEmpresa, 'emmpr_uafe_cprov', $oIfxA, '');
 if (strtolower(trim($uafeEstado)) === 't') {
-    $sqlFiltroEstado = "  AND c.clpv_est_clpv = 'A'";
+    $sqlFiltroEstado = "  AND upper(trim(c.clpv_est_clpv)) = 'A'";
 }
 $oIfxA->Free();
 
-$sql = "select c.clpv_cod_clpv, c.clpv_nom_clpv,  c.clpv_ruc_clpv,
+$sqlListado = "select c.clpv_cod_clpv, c.clpv_nom_clpv,  c.clpv_ruc_clpv,
                 c.clpv_cod_vend, c.clpv_cot_clpv, c.clpv_pre_ven, '' as direccion,
                 '' as telefono, clpv_etu_clpv, clpv_cod_tpago, clpv_cod_fpagop, clpv_pro_pago,
                 c.clpv_clopv_clpv
@@ -94,6 +94,8 @@ $sql = "select c.clpv_cod_clpv, c.clpv_nom_clpv,  c.clpv_ruc_clpv,
             <?
             $cont   = 1;
             $sClass = 'off';
+
+            echo "<pre>SQL QUE EJECUTA EL MODAL:\n$sqlListado</pre>";
             ?>
             <table id="tblClientesProv" align="center" border="0" cellpadding="2" cellspacing="1" width="98%" style="border:#999999 1px solid" class="display table table-striped table-bordered">
                 <thead>
@@ -111,7 +113,7 @@ $sql = "select c.clpv_cod_clpv, c.clpv_nom_clpv,  c.clpv_ruc_clpv,
                 </thead>
                 <tbody>
                     <?
-                    if ($oIfx->Query($sql)) {
+                    if ($oIfx->Query($sqlListado)) {
                         if( $oIfx->NumFilas() > 0 ) {
                             do {
                                 $codigo      = ($oIfx->f('clpv_cod_clpv'));
@@ -135,21 +137,21 @@ $sql = "select c.clpv_cod_clpv, c.clpv_nom_clpv,  c.clpv_ruc_clpv,
                                 }
 
                                 // correo
-                                $sql = "select min( emai_ema_emai ) as correo from saeemai where
+                                $sqlCorreo = "select min( emai_ema_emai ) as correo from saeemai where
                                                 emai_cod_empr = $idempresa and
                                                 emai_cod_clpv = $codigo ";
-                                $correo = acento_func(consulta_string_func($sql, 'correo', $oIfxA, ''));
+                                $correo = acento_func(consulta_string_func($sqlCorreo, 'correo', $oIfxA, ''));
 
                                 // FECHA DE VENCIMIENTO
                                 $fecha_venc = (sumar_dias_func( date("Y-m-d"), $prove_dia)); //  Y/m/d
 
                                 // AUTORIZACION PROVE
-                                $sql = "select  max(coa_fec_vali) as coa_fec_vali, coa_aut_usua, coa_seri_docu, coa_fact_ini, coa_fact_fin
+                                $sqlAutorizacion = "select  max(coa_fec_vali) as coa_fec_vali, coa_aut_usua, coa_seri_docu, coa_fact_ini, coa_fact_fin
                                                 from saecoa where
                                                 clpv_cod_empr = $idempresa and
                                                 clpv_cod_clpv = $codigo group by coa_fec_vali,2,3,4,5 ";
                                 $fec_cadu_prove = ''; $auto_prove = ''; $serie_prove = '';  $ini_prove = ''; $fin_prove='';
-                                if($oIfxA->Query($sql)) {
+                                if($oIfxA->Query($sqlAutorizacion)) {
                                     if($oIfxA->NumFilas()>0) {
                                         $fec_cadu_prove = fecha_mysql_func2($oIfxA->f('coa_fec_vali'));
                                         $auto_prove = $oIfxA->f('coa_aut_usua');
