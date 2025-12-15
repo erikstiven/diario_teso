@@ -24,7 +24,7 @@ $tipo_pago   = isset($_GET['tipo_pago']) ? $_GET['tipo_pago'] : '';
 $forma_pago  = isset($_GET['forma_pago']) ? $_GET['forma_pago'] : '';
 
 $sqlFiltroEstado = '';
-$sqlEstadoEmpresa = "select emmpr_uafe_cprov from saeempr where emmpr_cod_empr = $idempresa";
+$sqlEstadoEmpresa = "select emmpr_uafe_cprov from saeempr where empr_cod_empr = $idempresa";
 if ($oIfxA->Query($sqlEstadoEmpresa)) {
     if ($oIfxA->NumFilas() > 0) {
         $uafeEstado = $oIfxA->f('emmpr_uafe_cprov');
