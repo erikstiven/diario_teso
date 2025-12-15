@@ -58,25 +58,30 @@ if (session_status() !== PHP_SESSION_ACTIVE) {session_start();}
         $oIfxA -> DSN = $DSN_Ifx;
         $oIfxA -> Conectar();
 
-        $idempresa   = $_GET['empresa'];
-        $cliente_nom = $_GET['cliente'];
-        $op          = $_GET['op'];
+        $idempresa   = isset($_GET['empresa']) ? intval($_GET['empresa']) : 0;
+        $cliente_nom = isset($_GET['cliente']) ? trim($_GET['cliente']) : '';
+        $op          = isset($_GET['op']) ? intval($_GET['op']) : 0;
 
         $sql_parametro = "select emmpr_uafe_cprov from saeempr where emmpr_cod_empr = $idempresa";
-        $filtra_proveedores = (consulta_string_func($sql_parametro, 'emmpr_uafe_cprov', $oIfx, '') === 't');
+        $valor_parametro = consulta_string_func($sql_parametro, 'emmpr_uafe_cprov', $oIfx, '');
+        $filtra_proveedores = ($valor_parametro === 't');
+
+        $condiciones = array();
+        $condiciones[] = "c.clpv_cod_empr = $idempresa";
+
+        if ($filtra_proveedores) {
+            $condiciones[] = "c.clpv_clopv_clpv = 'PV'";
+            $condiciones[] = "c.clpv_est_clpv = 'A'";
+        }
+
+        $cliente_nom_sql = addslashes($cliente_nom);
+        $condiciones[] = "(c.clpv_nom_clpv like upper('%$cliente_nom_sql%') OR c.clpv_ruc_clpv like upper('%$cliente_nom_sql%'))";
 
         $sql = "select c.clpv_cod_clpv, c.clpv_nom_clpv,  c.clpv_ruc_clpv,
                         c.clpv_cod_vend, c.clpv_cot_clpv, c.clpv_pre_ven, '' as direccion,
                         '' as telefono, clpv_etu_clpv, clpv_cod_tpago, clpv_cod_fpagop, clpv_pro_pago,
                                                  c.clpv_clopv_clpv
-                        from saeclpv c  where
-                        c.clpv_cod_empr       = $idempresa and";
-
-        if ($filtra_proveedores) {
-            $sql .= " c.clpv_clopv_clpv     = 'PV' and c.clpv_est_clpv = 'A' and";
-        }
-
-        $sql .= " (c.clpv_nom_clpv like upper('%$cliente_nom%') OR c.clpv_ruc_clpv like upper('%$cliente_nom%'))
+                        from saeclpv c  where " . implode(' and ', $condiciones) . "
                         group by 1,2,3,4,5,6, 9, 10, 11, 12, 13 order by 2 LIMIT 50";
         //echo $sql;
         ?>
