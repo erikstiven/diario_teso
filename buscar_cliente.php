@@ -2,7 +2,6 @@
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-echo 'PHP OK<br>';
 
 include_once('../../Include/config.inc.php');
 include_once(path(DIR_INCLUDE).'conexiones/db_conexion.php');
@@ -39,7 +38,7 @@ $sql = "select c.clpv_cod_clpv, c.clpv_nom_clpv,  c.clpv_ruc_clpv,
     <head>
         <link rel="stylesheet" type = "text/css" href="<?=$_COOKIE["JIREH_INCLUDE"]?>css/general.css"/>
         <link href="<?=$_COOKIE["JIREH_INCLUDE"]?>Clases/Formulario/Css/Formulario.css" rel="stylesheet" type="text/css"/>
-        <link rel="stylesheet" href="media/css/bootstrap.css"/>
+        <link rel="stylesheet" href="media/css/bootstrap.min.css"/>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <title>LISTA DE CLIENTE - PROVEEDORES</title>
         <link rel="stylesheet" href="media/css/jquery.dataTables.min.css"/>
@@ -117,15 +116,9 @@ $sql = "select c.clpv_cod_clpv, c.clpv_nom_clpv,  c.clpv_ruc_clpv,
                                 $fpago       = $oIfx->f('clpv_cod_fpagop');
                                 $tpago       = $oIfx->f('clpv_cod_tpago');
                                 $prove_dia   = $oIfx->f('clpv_pro_pago');
-                                $clpv_etu_clpv = $oIfx->f('clpv_etu_clpv');
                                 $contribuyente_especial = $oIfx->f('clpv_etu_clpv');
+                                $clpv_etu_clpv = ($contribuyente_especial == 1 || strtoupper(trim($contribuyente_especial)) === 'S') ? 'S' : 'N';
                                 $cl_pv       = $oIfx->f('clpv_clopv_clpv');
-
-                                if($clpv_etu_clpv==1) {
-                                    $clpv_etu_clpv = 'S';
-                                }else {
-                                    $clpv_etu_clpv = 'N';
-                                }
 
                                 if(empty($prove_dia)) {
                                     $prove_dia = 0;
@@ -274,6 +267,9 @@ $sql = "select c.clpv_cod_clpv, c.clpv_nom_clpv,  c.clpv_ruc_clpv,
         <script type="text/javascript">
             $(document).ready(function() {
                 $('#tblClientesProv').DataTable({
+                    dom: "<'row'<'col-sm-6'l><'col-sm-6'f>>" +
+                         "<'row'<'col-sm-12'tr>>" +
+                         "<'row'<'col-sm-5'i><'col-sm-7'p>>",
                     paging: true,
                     searching: true,
                     ordering: true,
