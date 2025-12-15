@@ -62,14 +62,21 @@ if (session_status() !== PHP_SESSION_ACTIVE) {session_start();}
         $cliente_nom = $_GET['cliente'];
         $op          = $_GET['op'];
 
+        $sql_parametro = "select emmpr_uafe_cprov from saeempr where emmpr_cod_empr = $idempresa";
+        $filtra_proveedores = (consulta_string_func($sql_parametro, 'emmpr_uafe_cprov', $oIfx, '') === 't');
+
         $sql = "select c.clpv_cod_clpv, c.clpv_nom_clpv,  c.clpv_ruc_clpv,
-                        c.clpv_cod_vend, c.clpv_cot_clpv, c.clpv_pre_ven, '' as direccion, 
+                        c.clpv_cod_vend, c.clpv_cot_clpv, c.clpv_pre_ven, '' as direccion,
                         '' as telefono, clpv_etu_clpv, clpv_cod_tpago, clpv_cod_fpagop, clpv_pro_pago,
-						 c.clpv_clopv_clpv
-                        from saeclpv c  where 
-                        c.clpv_cod_empr       = $idempresa and
-                   --     c.clpv_clopv_clpv     = 'PV' and
-                        (c.clpv_nom_clpv like upper('%$cliente_nom%') OR c.clpv_ruc_clpv like upper('%$cliente_nom%'))  
+                                                 c.clpv_clopv_clpv
+                        from saeclpv c  where
+                        c.clpv_cod_empr       = $idempresa and";
+
+        if ($filtra_proveedores) {
+            $sql .= " c.clpv_clopv_clpv     = 'PV' and c.clpv_est_clpv = 'A' and";
+        }
+
+        $sql .= " (c.clpv_nom_clpv like upper('%$cliente_nom%') OR c.clpv_ruc_clpv like upper('%$cliente_nom%'))
                         group by 1,2,3,4,5,6, 9, 10, 11, 12, 13 order by 2 LIMIT 50";
         //echo $sql;
         ?>
