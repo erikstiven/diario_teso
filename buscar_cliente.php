@@ -62,12 +62,19 @@ if (session_status() !== PHP_SESSION_ACTIVE) {session_start();}
         $cliente_nom = isset($_GET['cliente']) ? trim($_GET['cliente']) : '';
         $op          = isset($_GET['op']) ? intval($_GET['op']) : 0;
 
-        $sql_parametro = "select emmpr_uafe_cprov from saeempr where emmpr_cod_empr = $idempresa";
-        $valor_parametro = consulta_string_func($sql_parametro, 'emmpr_uafe_cprov', $oIfx, '');
+        $valor_parametro = '';
+        if ($idempresa > 0) {
+            $sql_parametro = "select emmpr_uafe_cprov from saeempr where emmpr_cod_empr = $idempresa";
+            $valor_parametro = consulta_string_func($sql_parametro, 'emmpr_uafe_cprov', $oIfx, '');
+        }
         $filtra_proveedores = ($valor_parametro === 't');
 
         $condiciones = array();
-        $condiciones[] = "c.clpv_cod_empr = $idempresa";
+        if ($idempresa > 0) {
+            $condiciones[] = "c.clpv_cod_empr = $idempresa";
+        } else {
+            $condiciones[] = '1=0';
+        }
 
         if ($filtra_proveedores) {
             $condiciones[] = "c.clpv_clopv_clpv = 'PV'";
@@ -77,12 +84,14 @@ if (session_status() !== PHP_SESSION_ACTIVE) {session_start();}
         $cliente_nom_sql = addslashes($cliente_nom);
         $condiciones[] = "(c.clpv_nom_clpv like upper('%$cliente_nom_sql%') OR c.clpv_ruc_clpv like upper('%$cliente_nom_sql%'))";
 
+        $where_sql = count($condiciones) > 0 ? implode(' and ', $condiciones) : '1=1';
+
         $sql = "select c.clpv_cod_clpv, c.clpv_nom_clpv,  c.clpv_ruc_clpv,
                         c.clpv_cod_vend, c.clpv_cot_clpv, c.clpv_pre_ven, '' as direccion,
-                        '' as telefono, clpv_etu_clpv, clpv_cod_tpago, clpv_cod_fpagop, clpv_pro_pago,
-                                                 c.clpv_clopv_clpv
-                        from saeclpv c  where " . implode(' and ', $condiciones) . "
-                        group by 1,2,3,4,5,6, 9, 10, 11, 12, 13 order by 2 LIMIT 50";
+                        '' as telefono, '' as celular, clpv_etu_clpv, clpv_cod_tpago, clpv_cod_fpagop, clpv_pro_pago,
+                        '' as tipo_pago, '' as forma_pago, c.clpv_clopv_clpv
+                        from saeclpv c  where $where_sql
+                        group by 1,2,3,4,5,6, 10, 11, 12, 13, 16 order by 2 LIMIT 50";
         //echo $sql;
         ?>
     </body>
@@ -92,14 +101,15 @@ if (session_status() !== PHP_SESSION_ACTIVE) {session_start();}
         echo '<table align="center" border="0" cellpadding="2" cellspacing="1" width="98%" style="border:#999999 1px solid">';
         echo '<tr><th colspan="7" align="center" class="titulopedido">LISTA DE CLIENTES - PROVEEDORES</th></tr>';
         echo '<tr>
-						<th align="left" bgcolor="#EBF0FA" class="titulopedido">ID</th>
-						<th align="left" bgcolor="#EBF0FA" class="titulopedido">TIPO</th>
-						<th align="left" bgcolor="#EBF0FA" class="titulopedido">CODIGO ITEM</th>
-						<th align="left" bgcolor="#EBF0FA" class="titulopedido">PROVEEDOR</th>
+                                                <th align="left" bgcolor="#EBF0FA" class="titulopedido">ID</th>
+                                                <th align="left" bgcolor="#EBF0FA" class="titulopedido">TIPO</th>
+                                                <th align="left" bgcolor="#EBF0FA" class="titulopedido">CODIGO ITEM</th>
+                                                <th align="left" bgcolor="#EBF0FA" class="titulopedido">PROVEEDOR</th>
                         <th align="left" bgcolor="#EBF0FA" class="titulopedido">IDENTIFICACION</th>
                         <th align="left" bgcolor="#EBF0FA" class="titulopedido">CONTRIBUYENTE ESPECIAL</th>
-		  </tr>';
+                  </tr>';
 
+        $sClass = 'off';
         if ($oIfx->Query($sql)) {
             if( $oIfx->NumFilas() > 0 ) {
                 do {
@@ -108,16 +118,21 @@ if (session_status() !== PHP_SESSION_ACTIVE) {session_start();}
                     $ruc         = ($oIfx->f('clpv_ruc_clpv'));
                     $dire        = htmlentities($oIfx->f('direccion'));
                     $telefono    = $oIfx->f('telefono');
-                    $celular     = $oIfx->f('celular');
                     $vendedor    = $oIfx->f('clpv_cod_vend');
                     $contacto    = $oIfx->f('clpv_cot_clpv');
                     $precio      = round($oIfx->f('clpv_pre_ven'),0);
                     $fpago       = $oIfx->f('clpv_cod_fpagop');
                     $tpago       = $oIfx->f('clpv_cod_tpago');
                     $prove_dia   = $oIfx->f('clpv_pro_pago');
+                    $celular     = $oIfx->f('celular');
+                    $tipo_pago   = $oIfx->f('tipo_pago');
+                    $forma_pago  = $oIfx->f('forma_pago');
+                    if ($celular === null) { $celular = ''; }
+                    if ($tipo_pago === null) { $tipo_pago = ''; }
+                    if ($forma_pago === null) { $forma_pago = ''; }
                     $clpv_etu_clpv = $oIfx->f('clpv_etu_clpv');
                     $contribuyente_especial = $oIfx->f('clpv_etu_clpv');
-					$cl_pv       = $oIfx->f('clpv_clopv_clpv');
+                                        $cl_pv       = $oIfx->f('clpv_clopv_clpv');
 					 
 
                     if($clpv_etu_clpv==1) {
