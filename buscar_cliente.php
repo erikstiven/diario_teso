@@ -10,8 +10,13 @@ if (session_status() !== PHP_SESSION_ACTIVE) {session_start();}
     <head>
         <link rel="stylesheet" type = "text/css" href="<?=$_COOKIE["JIREH_INCLUDE"]?>css/general.css"/>
         <link href="<?=$_COOKIE["JIREH_INCLUDE"]?>Clases/Formulario/Css/Formulario.css" rel="stylesheet" type="text/css"/>
+        <link rel="stylesheet" href="media/css/bootstrap.css"/>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <title>LISTA DE CLIENTE - PROVEEDORES</title>
+        <link rel="stylesheet" href="media/css/dataTables.bootstrap.min.css"/>
+        <script src="media/js/jquery-1.10.2.js"></script>
+        <script src="media/js/jquery.dataTables.min.js"></script>
+        <script src="media/js/dataTables.bootstrap.min.js"></script>
         <style type="text/css">
             <!--
             .Estilo1 {
@@ -63,30 +68,33 @@ if (session_status() !== PHP_SESSION_ACTIVE) {session_start();}
         $op          = $_GET['op'];
 
         $sql = "select c.clpv_cod_clpv, c.clpv_nom_clpv,  c.clpv_ruc_clpv,
-                        c.clpv_cod_vend, c.clpv_cot_clpv, c.clpv_pre_ven, '' as direccion, 
+                        c.clpv_cod_vend, c.clpv_cot_clpv, c.clpv_pre_ven, '' as direccion,
                         '' as telefono, clpv_etu_clpv, clpv_cod_tpago, clpv_cod_fpagop, clpv_pro_pago,
-						 c.clpv_clopv_clpv
-                        from saeclpv c  where 
+                                                 c.clpv_clopv_clpv
+                        from saeclpv c  where
                         c.clpv_cod_empr       = $idempresa and
                    --     c.clpv_clopv_clpv     = 'PV' and
-                        (c.clpv_nom_clpv like upper('%$cliente_nom%') OR c.clpv_ruc_clpv like upper('%$cliente_nom%'))  
-                        group by 1,2,3,4,5,6, 9, 10, 11, 12, 13 order by 2 LIMIT 50";
+                        (c.clpv_nom_clpv like upper('%$cliente_nom%') OR c.clpv_ruc_clpv like upper('%$cliente_nom%'))
+                        group by 1,2,3,4,5,6, 9, 10, 11, 12, 13 order by 2";
         //echo $sql;
         ?>
     </body>
     <div id="contenido">
         <?
         $cont=1;
-        echo '<table align="center" border="0" cellpadding="2" cellspacing="1" width="98%" style="border:#999999 1px solid">';
-        echo '<tr><th colspan="7" align="center" class="titulopedido">LISTA DE CLIENTES - PROVEEDORES</th></tr>';
+        echo '<table id="clientes-table" align="center" border="0" cellpadding="2" cellspacing="1" width="98%" style="border:#999999 1px solid" class="display table table-striped table-bordered">';
+        echo '<thead>';
+        echo '<tr><th colspan="6" align="center" class="titulopedido">LISTA DE CLIENTES - PROVEEDORES</th></tr>';
         echo '<tr>
-						<th align="left" bgcolor="#EBF0FA" class="titulopedido">ID</th>
-						<th align="left" bgcolor="#EBF0FA" class="titulopedido">TIPO</th>
-						<th align="left" bgcolor="#EBF0FA" class="titulopedido">CODIGO ITEM</th>
-						<th align="left" bgcolor="#EBF0FA" class="titulopedido">PROVEEDOR</th>
+                                                <th align="left" bgcolor="#EBF0FA" class="titulopedido">ID</th>
+                                                <th align="left" bgcolor="#EBF0FA" class="titulopedido">TIPO</th>
+                                                <th align="left" bgcolor="#EBF0FA" class="titulopedido">CODIGO ITEM</th>
+                                                <th align="left" bgcolor="#EBF0FA" class="titulopedido">PROVEEDOR</th>
                         <th align="left" bgcolor="#EBF0FA" class="titulopedido">IDENTIFICACION</th>
                         <th align="left" bgcolor="#EBF0FA" class="titulopedido">CONTRIBUYENTE ESPECIAL</th>
-		  </tr>';
+                  </tr>';
+        echo '</thead>';
+        echo '<tbody>';
 
         if ($oIfx->Query($sql)) {
             if( $oIfx->NumFilas() > 0 ) {
@@ -238,7 +246,10 @@ if (session_status() !== PHP_SESSION_ACTIVE) {session_start();}
             }
         }
         $oIfx->Free();
-        echo '<tr><td colspan="3">Se mostraron '.($cont-1).' Registros</td></tr>';
+        echo '</tbody>';
+        echo '<tfoot>';
+        echo '<tr><td colspan="6">Se mostraron '.($cont-1).' Registros</td></tr>';
+        echo '</tfoot>';
         echo '</table>';
         //echo $cod_producto;
 
@@ -252,5 +263,14 @@ if (session_status() !== PHP_SESSION_ACTIVE) {session_start();}
         }
         ?>
     </div>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('#clientes-table').DataTable({
+                paging: true,
+                searching: true,
+                ordering: true
+            });
+        });
+    </script>
 </html>
 
