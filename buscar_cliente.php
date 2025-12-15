@@ -250,10 +250,22 @@ $sql = "select c.clpv_cod_clpv, c.clpv_nom_clpv,  c.clpv_ruc_clpv,
             </table>
             <?
             function fecha_mysql_func2($fecha) {
-                $fecha_array = explode('/',$fecha);
-                $m = $fecha_array[0];
-                $y = $fecha_array[2];
-                $d = $fecha_array[1];
+                if (empty($fecha)) {
+                    return '';
+                }
+
+                $fecha_array = explode('/', $fecha);
+                if (count($fecha_array) < 3) {
+                    return '';
+                }
+
+                $m = isset($fecha_array[0]) ? $fecha_array[0] : '';
+                $d = isset($fecha_array[1]) ? $fecha_array[1] : '';
+                $y = isset($fecha_array[2]) ? $fecha_array[2] : '';
+
+                if ($m === '' || $d === '' || $y === '') {
+                    return '';
+                }
 
                 return ( $y.'/'.$m.'/'.$d );
             }
