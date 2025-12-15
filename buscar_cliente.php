@@ -277,47 +277,51 @@ $sqlListado = "select c.clpv_cod_clpv, c.clpv_nom_clpv,  c.clpv_ruc_clpv,
             ?>
         </div>
         <script type="text/javascript">
-            $(function() {
-                var $tabla = $('#tblClientesProv');
-                if ($.fn.DataTable.isDataTable($tabla)) {
-                    return;
+            (function($) {
+                function inicializarTabla() {
+                    var $tabla = $('#tblClientesProv');
+                    if (!$tabla.length || $.fn.DataTable.isDataTable($tabla[0])) {
+                        return;
+                    }
+
+                    $tabla.DataTable({
+                        dom: "<'row'<'col-sm-6'l><'col-sm-6'f>>" +
+                             "<'row'<'col-sm-12'tr>>" +
+                             "<'row'<'col-sm-5'i><'col-sm-7'p>>",
+                        paging: true,
+                        searching: true,
+                        ordering: true,
+                        info: true,
+                        deferRender: true,
+                        language: {
+                            decimal: '',
+                            emptyTable: 'No hay datos disponibles en la tabla',
+                            info: 'Mostrando _START_ a _END_ de _TOTAL_ registros',
+                            infoEmpty: 'Mostrando 0 a 0 de 0 registros',
+                            infoFiltered: '(filtrado de _MAX_ registros totales)',
+                            infoPostFix: '',
+                            thousands: ',',
+                            lengthMenu: 'Mostrar _MENU_ registros',
+                            loadingRecords: 'Cargando...',
+                            processing: 'Procesando...',
+                            search: 'Buscar:',
+                            zeroRecords: 'No se encontraron registros coincidentes',
+                            paginate: {
+                                first: 'Primero',
+                                last: 'Último',
+                                next: 'Siguiente',
+                                previous: 'Anterior'
+                            },
+                            aria: {
+                                sortAscending: ': activar para ordenar la columna de manera ascendente',
+                                sortDescending: ': activar para ordenar la columna de manera descendente'
+                            }
+                        }
+                    });
                 }
 
-                $tabla.DataTable({
-                    dom: "<'row'<'col-sm-6'l><'col-sm-6'f>>" +
-                         "<'row'<'col-sm-12'tr>>" +
-                         "<'row'<'col-sm-5'i><'col-sm-7'p>>",
-                    paging: true,
-                    searching: true,
-                    ordering: true,
-                    info: true,
-                    deferRender: true,
-                    language: {
-                        decimal: '',
-                        emptyTable: 'No hay datos disponibles en la tabla',
-                        info: 'Mostrando _START_ a _END_ de _TOTAL_ registros',
-                        infoEmpty: 'Mostrando 0 a 0 de 0 registros',
-                        infoFiltered: '(filtrado de _MAX_ registros totales)',
-                        infoPostFix: '',
-                        thousands: ',',
-                        lengthMenu: 'Mostrar _MENU_ registros',
-                        loadingRecords: 'Cargando...',
-                        processing: 'Procesando...',
-                        search: 'Buscar:',
-                        zeroRecords: 'No se encontraron registros coincidentes',
-                        paginate: {
-                            first: 'Primero',
-                            last: 'Último',
-                            next: 'Siguiente',
-                            previous: 'Anterior'
-                        },
-                        aria: {
-                            sortAscending: ': activar para ordenar la columna de manera ascendente',
-                            sortDescending: ': activar para ordenar la columna de manera descendente'
-                        }
-                    }
-                });
-            });
+                inicializarTabla();
+            })(jQuery);
         </script>
     </body>
 </html>
