@@ -3,6 +3,26 @@ include_once('../../Include/config.inc.php');
 include_once(path(DIR_INCLUDE).'conexiones/db_conexion.php');
 include_once(path(DIR_INCLUDE).'comun.lib.php');
 
+$DEBUG = true;
+
+function debug_console($label, $data = null) {
+    global $DEBUG;
+    if (!$DEBUG) { return; }
+    $payload = ($data === null) ? $label : array('label' => $label, 'data' => $data);
+    echo "<script>console.log(".json_encode($payload)." );</script>\n";
+}
+
+function debug_marker($name) {
+    debug_console('DEBUG step', $name);
+}
+
+function debug_message($message) {
+    global $DEBUG;
+    if ($DEBUG) {
+        echo '<div style="font-family:monospace;font-size:11px;color:#900;">'.htmlentities($message)."</div>\n";
+    }
+}
+
 if (session_status() !== PHP_SESSION_ACTIVE) {session_start();}
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -50,6 +70,8 @@ if (session_status() !== PHP_SESSION_ACTIVE) {session_start();}
         <?
         if (session_status() !== PHP_SESSION_ACTIVE) {session_start();}
 
+        debug_marker('after session start');
+
         $oIfx = new Dbo;
         $oIfx -> DSN = $DSN_Ifx;
         $oIfx -> Conectar();
@@ -58,14 +80,35 @@ if (session_status() !== PHP_SESSION_ACTIVE) {session_start();}
         $oIfxA -> DSN = $DSN_Ifx;
         $oIfxA -> Conectar();
 
-        $idempresa   = isset($_GET['empresa']) ? intval($_GET['empresa']) : 0;
-        $cliente_nom = isset($_GET['cliente']) ? trim($_GET['cliente']) : '';
-        $op          = isset($_GET['op']) ? intval($_GET['op']) : 0;
+        $empresa_raw = $_GET['empresa'] ?? '';
+        $cliente_raw = $_GET['cliente'] ?? '';
+        $op_raw      = $_GET['op'] ?? '';
+
+        $idempresa   = intval($empresa_raw);
+        $cliente_nom = trim($cliente_raw);
+        $op          = intval($op_raw);
+
+        debug_console('GET params', array(
+            'empresa_raw' => $empresa_raw,
+            'cliente_raw' => $cliente_raw,
+            'op_raw'      => $op_raw,
+            'idempresa'   => $idempresa,
+            'cliente_nom' => $cliente_nom,
+            'op'          => $op,
+        ));
+
+        debug_marker('before parameter query');
 
         $valor_parametro = '';
         if ($idempresa > 0) {
             $sql_parametro = "select emmpr_uafe_cprov from saeempr where emmpr_cod_empr = $idempresa";
             $valor_parametro = consulta_string_func($sql_parametro, 'emmpr_uafe_cprov', $oIfx, '');
+            debug_console('parametro emmpr_uafe_cprov', array(
+                'sql' => $sql_parametro,
+                'valor' => $valor_parametro,
+            ));
+        } else {
+            debug_message('Parametro empresa ausente: se usará filtro 1=0 para evitar consulta.');
         }
         $filtra_proveedores = ($valor_parametro === 't');
 
@@ -86,13 +129,16 @@ if (session_status() !== PHP_SESSION_ACTIVE) {session_start();}
 
         $where_sql = count($condiciones) > 0 ? implode(' and ', $condiciones) : '1=1';
 
+        debug_console('WHERE generado', $where_sql);
+
         $sql = "select c.clpv_cod_clpv, c.clpv_nom_clpv,  c.clpv_ruc_clpv,
                         c.clpv_cod_vend, c.clpv_cot_clpv, c.clpv_pre_ven, '' as direccion,
                         '' as telefono, '' as celular, clpv_etu_clpv, clpv_cod_tpago, clpv_cod_fpagop, clpv_pro_pago,
                         '' as tipo_pago, '' as forma_pago, c.clpv_clopv_clpv
                         from saeclpv c  where $where_sql
                         group by 1,2,3,4,5,6, 10, 11, 12, 13, 16 order by 2 LIMIT 50";
-        //echo $sql;
+        debug_console('SQL final', $sql);
+        debug_marker('before main query');
         ?>
     </body>
     <div id="contenido">
@@ -110,7 +156,23 @@ if (session_status() !== PHP_SESSION_ACTIVE) {session_start();}
                   </tr>';
 
         $sClass = 'off';
-        if ($oIfx->Query($sql)) {
+        $query_ok = $oIfx->Query($sql);
+        if (!$query_ok) {
+            $errorMsg = '';
+            if (method_exists($oIfx, 'GetMensaje')) {
+                $errorMsg = $oIfx->GetMensaje();
+            } elseif (method_exists($oIfx, 'getMensaje')) {
+                $errorMsg = $oIfx->getMensaje();
+            } elseif (property_exists($oIfx, 'error')) {
+                $errorMsg = $oIfx->error;
+            }
+            debug_console('SQL execution error', array('error' => $errorMsg, 'sql' => $sql));
+            debug_message('Error al ejecutar SQL: '.$errorMsg);
+            debug_message('Consulta: '.$sql);
+        }
+
+        if ($query_ok) {
+            debug_marker('after main query success');
             if( $oIfx->NumFilas() > 0 ) {
                 do {
                     $codigo      = ($oIfx->f('clpv_cod_clpv'));
@@ -261,6 +323,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {session_start();}
                     $cont++;
                 }while($oIfx->SiguienteRegistro());
             }else {
+                debug_marker('no rows returned');
                 echo '<span class="fecha_letra">Sin Datos....</span>';
             }
         }
