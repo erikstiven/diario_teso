@@ -1,4 +1,9 @@
-<?
+<?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+echo 'PHP OK<br>';
+
 include_once('../../Include/config.inc.php');
 include_once(path(DIR_INCLUDE).'conexiones/db_conexion.php');
 include_once(path(DIR_INCLUDE).'comun.lib.php');
@@ -13,9 +18,11 @@ $oIfxA = new Dbo;
 $oIfxA -> DSN = $DSN_Ifx;
 $oIfxA -> Conectar();
 
-$idempresa   = $_GET['empresa'];
-$cliente_nom = $_GET['cliente'];
-$op          = $_GET['op'];
+$idempresa   = isset($_GET['empresa']) ? $_GET['empresa'] : '';
+$cliente_nom = isset($_GET['cliente']) ? $_GET['cliente'] : '';
+$op          = isset($_GET['op']) ? $_GET['op'] : '';
+$tipo_pago   = isset($_GET['tipo_pago']) ? $_GET['tipo_pago'] : '';
+$forma_pago  = isset($_GET['forma_pago']) ? $_GET['forma_pago'] : '';
 
 $sql = "select c.clpv_cod_clpv, c.clpv_nom_clpv,  c.clpv_ruc_clpv,
                 c.clpv_cod_vend, c.clpv_cot_clpv, c.clpv_pre_ven, '' as direccion,
