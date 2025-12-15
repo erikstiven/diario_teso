@@ -268,7 +268,7 @@ $sql = "select c.clpv_cod_clpv, c.clpv_nom_clpv,  c.clpv_ruc_clpv,
             $(function() {
                 var $tabla = $('#tblClientesProv');
                 if ($.fn.DataTable.isDataTable($tabla)) {
-                    $tabla.DataTable().destroy();
+                    return;
                 }
 
                 $tabla.DataTable({
@@ -279,6 +279,7 @@ $sql = "select c.clpv_cod_clpv, c.clpv_nom_clpv,  c.clpv_ruc_clpv,
                     searching: true,
                     ordering: true,
                     info: true,
+                    deferRender: true,
                     language: {
                         decimal: '',
                         emptyTable: 'No hay datos disponibles en la tabla',
