@@ -23,12 +23,26 @@ $op          = isset($_GET['op']) ? $_GET['op'] : '';
 $tipo_pago   = isset($_GET['tipo_pago']) ? $_GET['tipo_pago'] : '';
 $forma_pago  = isset($_GET['forma_pago']) ? $_GET['forma_pago'] : '';
 
+$sqlFiltroEstado = '';
+$sqlEstadoEmpresa = "select emmpr_uafe_cprov from saeempr where emmpr_cod_empr = $idempresa";
+if ($oIfxA->Query($sqlEstadoEmpresa)) {
+    if ($oIfxA->NumFilas() > 0) {
+        $uafeEstado = $oIfxA->f('emmpr_uafe_cprov');
+        if (strtolower(trim($uafeEstado)) === 't') {
+            $sqlFiltroEstado = "  AND c.clpv_est_clpv = 'A'";
+        }
+    }
+}
+$oIfxA->Free();
+
 $sql = "select c.clpv_cod_clpv, c.clpv_nom_clpv,  c.clpv_ruc_clpv,
                 c.clpv_cod_vend, c.clpv_cot_clpv, c.clpv_pre_ven, '' as direccion,
                 '' as telefono, clpv_etu_clpv, clpv_cod_tpago, clpv_cod_fpagop, clpv_pro_pago,
                 c.clpv_clopv_clpv
         from saeclpv c  where
-        c.clpv_cod_empr       = $idempresa and
+        c.clpv_cod_empr       = $idempresa" .
+        $sqlFiltroEstado .
+        " and
    --     c.clpv_clopv_clpv     = 'PV' and
         (c.clpv_nom_clpv like upper('%$cliente_nom%') OR c.clpv_ruc_clpv like upper('%$cliente_nom%'))
         group by 1,2,3,4,5,6, 9, 10, 11, 12, 13 order by 2";
