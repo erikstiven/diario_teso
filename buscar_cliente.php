@@ -35,6 +35,7 @@ $sql = "select c.clpv_cod_clpv, c.clpv_nom_clpv,  c.clpv_ruc_clpv,
         <link rel="stylesheet" href="media/css/bootstrap.css"/>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <title>LISTA DE CLIENTE - PROVEEDORES</title>
+        <link rel="stylesheet" href="media/css/jquery.dataTables.min.css"/>
         <link rel="stylesheet" href="media/css/dataTables.bootstrap.min.css"/>
         <script src="media/js/jquery-1.10.2.js"></script>
         <script src="media/js/jquery.dataTables.min.js"></script>
