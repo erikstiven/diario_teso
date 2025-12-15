@@ -17,7 +17,7 @@ $oIfxA = new Dbo;
 $oIfxA -> DSN = $DSN_Ifx;
 $oIfxA -> Conectar();
 
-$idempresa   = isset($_GET['empresa']) ? $_GET['empresa'] : '';
+$idempresa   = isset($_GET['empresa']) ? (int) $_GET['empresa'] : 0;
 $cliente_nom = isset($_GET['cliente']) ? $_GET['cliente'] : '';
 $op          = isset($_GET['op']) ? $_GET['op'] : '';
 $tipo_pago   = isset($_GET['tipo_pago']) ? $_GET['tipo_pago'] : '';
@@ -25,13 +25,9 @@ $forma_pago  = isset($_GET['forma_pago']) ? $_GET['forma_pago'] : '';
 
 $sqlFiltroEstado = '';
 $sqlEstadoEmpresa = "select emmpr_uafe_cprov from saeempr where empr_cod_empr = $idempresa";
-if ($oIfxA->Query($sqlEstadoEmpresa)) {
-    if ($oIfxA->NumFilas() > 0) {
-        $uafeEstado = $oIfxA->f('emmpr_uafe_cprov');
-        if (strtolower(trim($uafeEstado)) === 't') {
-            $sqlFiltroEstado = "  AND c.clpv_est_clpv = 'A'";
-        }
-    }
+$uafeEstado = consulta_string_func($sqlEstadoEmpresa, 'emmpr_uafe_cprov', $oIfxA, '');
+if (strtolower(trim($uafeEstado)) === 't') {
+    $sqlFiltroEstado = "  AND c.clpv_est_clpv = 'A'";
 }
 $oIfxA->Free();
 
